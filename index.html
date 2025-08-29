@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🎄 Christmas Lucky Wheel</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: url('christmas-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      overflow: hidden;
+      color: white;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 6px #000;
+    }
+
+    canvas {
+      border-radius: 50%;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+      background: rgba(0,0,0,0.3);
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ff4e50, #f9d423);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    /* ❄️ 雪花动画 */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 1em;
+      opacity: 0.8;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+        opacity: 0.3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🎄 Christmas Lucky Draw 🎁</h1>
+  <canvas id="wheel" width="500" height="500"></canvas>
+  <button onclick="spin()">Spin 🎡</button>
+
+  <script>
+    const names = [
+      "Alice", "Bob", "Charlie", "David", "Emma",
+      "Frank", "Grace", "Henry", "Ivy", "Jack",
+      "Kelly", "Leo", "Mia", "Nina", "Oscar",
+      "Paul", "Queen", "Rose", "Steve", "Tina"
+    ];
+
+    let activeNames = [...names];
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const radius = canvas.width / 2;
+    let angle = 0;
+    let spinning = false;
+
+    function drawWheel() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const sliceAngle = (2 * Math.PI) / names.length;
+
+      names.forEach((name, i) => {
+        const startAngle = i * sliceAngle + angle;
+        const endAngle = startAngle + sliceAngle;
+        
+        // 选中过的变灰
+        ctx.fillStyle = activeNames.includes(name) 
+          ? (i % 2 === 0 ? "#e74c3c" : "#3498db") 
+          : "#555";
+
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(startAngle + sliceAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 16px Poppins";
+        ctx.fillText(name, radius - 10, 5);
+        ctx.restore();
+      });
+    }
+
+    function spin() {
+      if (spinning || activeNames.length === 0) return;
+      spinning = true;
+
+      const randomSpin = Math.random() * activeNames.length;
+      const sliceAngle = (2 * Math.PI) / names.length;
+      const targetAngle = (names.indexOf(activeNames[Math.floor(randomSpin)])) * sliceAngle;
+
+      let spinAngle = angle + (10 * 2 * Math.PI) - targetAngle;
+      let spinTime = 0;
+      let spinTimeTotal = 5000;
+
+      function rotateWheel() {
+        spinTime += 30;
+        if (spinTime >= spinTimeTotal) {
+          const chosenIndex = names.indexOf(activeNames[Math.floor(randomSpin)]);
+          const chosenName = names[chosenIndex];
+          activeNames = activeNames.filter(n => n !== chosenName);
+          alert("🎉 Winner: " + chosenName);
+          spinning = false;
+          drawWheel();
+          return;
+        }
+        const easeOut = Math.pow(1 - spinTime / spinTimeTotal, 3);
+        angle = spinAngle * easeOut;
+        drawWheel();
+        requestAnimationFrame(rotateWheel);
+      }
+      rotateWheel();
+    }
+
+    // ❄️ 生成雪花
+    function createSnowflake() {
+      const snowflake = document.createElement("div");
+      snowflake.classList.add("snowflake");
+      snowflake.textContent = "❄";
+      snowflake.style.left = Math.random() * window.innerWidth + "px";
+      snowflake.style.fontSize = (Math.random() * 20 + 10) + "px";
+      snowflake.style.animationDuration = (Math.random() * 5 + 5) + "s";
+      document.body.appendChild(snowflake);
+
+      setTimeout(() => snowflake.remove(), 10000);
+    }
+    setInterval(createSnowflake, 200);
+
+    drawWheel();
+  </script>
+</body>
+</html>
